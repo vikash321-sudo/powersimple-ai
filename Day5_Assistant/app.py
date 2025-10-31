@@ -1,52 +1,55 @@
 import streamlit as st
 from langchain_openai import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
-from langchain.chains import ConversationChain
+from langchain.chains import LLMChain
+from langchain.prompts import PromptTemplate
 import os
 
-# ✅ Load the OpenAI key from Streamlit Secrets
-OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
-os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+# ✅ Page config FIRST
+st.set_page_config(page_title="PowerAI • Your Smart Assistant", page_icon="🤖")
 
-# ✅ Set up the Streamlit page
-st.set_page_config(
-    page_title="🤖 PowerAI — Your Smart AI Assistant",
-    page_icon="🤖",
-    layout="centered",
-)
+# ✅ App title
+st.title("🤖 PowerAI — Your Smart AI Assistant")
 
-st.title("🤖 PowerAI — Smart AI Assistant")
-st.write("Built with **LangChain + OpenAI GPT-4o-mini** ⚡")
+# ✅ Environment setup
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    st.error("🚨 Missing OPENAI_API_KEY! Add it under Streamlit → Settings → Secrets.")
+    st.stop()
 
-# Sidebar settings
-st.sidebar.header("⚙️ Configuration")
-temperature = st.sidebar.slider("Response Creativity", 0.0, 1.0, 0.6)
-memory_buffer = st.sidebar.slider("Memory Retention (messages)", 2, 10, 5)
+# ✅ Prompt Template
+template = """You are PowerAI, a personal AI assistant built by Vikas.
+Keep your tone friendly and concise.
 
-# ✅ Initialize memory
-memory = ConversationBufferMemory(memory_key="chat_history", k=memory_buffer)
+Conversation so far:
+{history}
 
-# ✅ Load the GPT-4o-mini model
-llm = ChatOpenAI(
-    model="gpt-4o-mini",  # ✅ Use GPT-4o-mini
-    temperature=temperature,
-)
+User: {user_input}
+PowerAI:"""
 
-# ✅ Conversation chain setup
-conversation = ConversationChain(
-    llm=llm,
-    memory=memory,
-    verbose=False
-)
+prompt = PromptTemplate(input_variables=["history", "user_input"], template=template)
 
-# Chat UI
-user_input = st.text_input("💬 Type your message here...")
+# ✅ Memory
+if "memory" not in st.session_state:
+    st.session_state.memory = ConversationBufferMemory(return_messages=True)
+
+# ✅ LLM (using OpenAI GPT)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.6, api_key=api_key)
+
+# ✅ Chain
+chain = LLMChain(llm=llm, prompt=prompt, memory=st.session_state.memory, verbose=False)
+
+# ✅ Chat UI
+user_input = st.text_input("💬 Type your message here:")
 
 if user_input:
-    response = conversation.predict(input=user_input)
-    st.chat_message("user").write(user_input)
-    st.chat_message("assistant").write(response)
+    with st.spinner("Thinking..."):
+        response = chain.run({"history": st.session_state.memory.load_memory_variables({})["history"], "user_input": user_input})
+        st.session_state.memory.save_context({"input": user_input}, {"output": response})
+        st.write(f"**PowerAI:** {response}")
 
-# Footer
-st.markdown("---")
-st.caption("🚀 Developed by Vikas | Powered by LangChain + OpenAI")
+# ✅ Sidebar session tools
+st.sidebar.title("Session Controls")
+if st.sidebar.button("🧹 Clear Chat"):
+    st.session_state.memory.clear()
+    st.experimental_rerun()
