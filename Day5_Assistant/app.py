@@ -1,53 +1,58 @@
 import streamlit as st
 from langchain_openai import ChatOpenAI
-from langchain.memory import ConversationBufferWindowMemory
+from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
 import os
 
 # --- PAGE SETUP ---
-st.set_page_config(page_title="PowerAI – Smart AI Assistant", page_icon="🤖")
+st.set_page_config(
+    page_title="PowerAI • Smart Assistant",
+    page_icon="🤖",
+    layout="centered"
+)
 
-# --- APP TITLE ---
-st.markdown("<h1 style='text-align: center;'>🤖 PowerAI – Smart AI Assistant</h1>", unsafe_allow_html=True)
+# --- HEADER ---
+st.title("🤖 PowerAI — Your Smart AI Assistant")
+st.write("Hello! I’m PowerAI, powered by GPT-4o mini & LangChain. Let’s build something powerful together 🚀")
 
-# --- SESSION SETUP ---
-if "memory_k" not in st.session_state:
-    st.session_state.memory_k = 6
+# --- SETTINGS SIDEBAR ---
+with st.sidebar:
+    st.header("⚙️ Settings")
+    st.caption("Model: **gpt-4o-mini**")
+    temperature = st.slider("Temperature", 0.0, 1.0, 0.6, 0.1)
+    st.markdown("Session Active ✅")
+    if st.button("Clear chat"):
+        st.session_state.memory = ConversationBufferMemory()
 
-if "memory" not in st.session_state:
-    st.session_state.memory = ConversationBufferWindowMemory(k=st.session_state.memory_k)
-
-# --- SIDEBAR SETTINGS ---
-st.sidebar.title("⚙️ Memory Settings")
-st.sidebar.write("Adjust how many past messages PowerAI remembers.")
-st.session_state.memory_k = st.sidebar.slider("K (last messages to keep)", 2, 12, st.session_state.memory_k)
-
-# --- LLM SETUP ---
+# --- OPENAI SETUP ---
+from dotenv import load_dotenv
+load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    st.error("⚠️ Missing OPENAI_API_KEY! Add it in Streamlit → Settings → Secrets.")
-    st.stop()
 
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.6, api_key=api_key)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=temperature, openai_api_key=api_key)
 
-# --- CONVERSATION CHAIN ---
+# --- MEMORY ---
+if "memory" not in st.session_state:
+    st.session_state.memory = ConversationBufferMemory()
+
+memory = st.session_state.memory
+
 conversation = ConversationChain(
     llm=llm,
-    memory=st.session_state.memory,
+    memory=memory,
     verbose=False
 )
 
-# --- CHAT UI ---
-user_input = st.text_input("💬 Type your message…")
+# --- CHAT INTERFACE ---
+user_input = st.chat_input("Type your message…")
 
 if user_input:
-    with st.spinner("🤔 Thinking..."):
-        response = conversation.run(user_input)
-        st.write(f"**PowerAI:** {response}")
+    with st.chat_message("user"):
+        st.write(user_input)
+    with st.chat_message("assistant"):
+        with st.spinner("🤔 Thinking…"):
+            response = conversation.run(user_input)
+            st.write(response)
 
-# --- SIDEBAR ACTIONS ---
-st.sidebar.write("---")
-st.sidebar.subheader("🧠 Memory Control")
-if st.sidebar.button("Clear Chat Memory"):
-    st.session_state.memory.clear()
-    st.experimental_rerun()
+# --- FOOTER ---
+st.markdown("<br><hr><center>Built with ❤️ using Streamlit & LangChain</center>", unsafe_allow_html=True)
