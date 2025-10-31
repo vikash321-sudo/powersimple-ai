@@ -12,8 +12,8 @@ import streamlit as st
 
 # ---- Page config MUST be the first Streamlit call ----
 st.set_page_config(
-    page_title="Day 5 • Simple AI Assistant (OpenAI)",
-    page_icon="🤖",
+    page_title="PowerAI — AI Assistant (OpenAI)",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -88,7 +88,7 @@ with colB:
 st.sidebar.success("Session Active ✅")
 
 # ---------------- Title ----------------
-st.markdown("<h1 style='text-align:center;'>🤖 Day 5 — Simple AI Assistant (OpenAI)</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align:center;'> PowerAI — Your Streamlit + OpenAI Assistant</h1>", unsafe_allow_html=True)
 
 # ---------------- Render History ----------------
 for m in st.session_state.messages:
