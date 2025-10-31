@@ -55,4 +55,4 @@ if user_input:
             st.write(response)
 
 # --- FOOTER ---
-st.markdown("<br><hr><center>Built with ❤️ using Streamlit & LangChain</center>", unsafe_allow_html=True)
+st.markdown("<br><hr><center>Built with ❤️ using Streamlit & LangChain by Vikash Jaishi</center>", unsafe_allow_html=True)
