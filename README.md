@@ -29,3 +29,32 @@ It demonstrates how to integrate LLMs into a fully functional web app — comple
    ```bash
    git clone https://github.com/vikash321-sudo/powersimple-ai.git
    cd powersimple-ai
+
+   # PowerAI — AI Agents & Memory (Week 2)
+
+Production-ready experiments while I learn & build AI agents:
+- ✅ Day 5: **PowerAI (OpenAI + Streamlit)**
+- ✅ Day 11: **Persistent Memory Bot (SQLite + LangChain)**
+- 🚧 Next: Day 12 Tools (weather/news/crypto), Multi-turn Chatbot, Docs & Deploys
+
+---
+
+## Day 11 — Persistent Memory Bot (SQLite + LangChain)
+
+**What it is:**  
+A console chatbot that **remembers across sessions** using `SQLChatMessageHistory` on SQLite.
+Close the app, reopen it—your past messages are still there.
+
+### Features
+- Long-term memory with SQLite
+- Clean LangChain memory pattern (`ConversationBufferMemory`)
+- OpenAI `gpt-4o-mini` (easy to swap models)
+- Minimal, dependency-stable setup
+
+### Tech Stack
+- Python, LangChain, langchain-openai
+- SQLite (via `SQLChatMessageHistory`)
+- dotenv for secrets
+
+### Folder
+
